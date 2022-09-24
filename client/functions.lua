@@ -70,10 +70,21 @@ function generateHunt(location)
     return createNPC(hash,location, 0,aggressive), animal
 end
 
+function checkHuntingArea(position)
+    local distanceCheck = GetDistanceBetweenCoords(position, HuntingArea, true)
+    local pass = false
+    local pdAlert = false
+    if position.y > 1400 then
+        pass = true
+        if distanceCheck > HuntingRadius then 
+            pdAlert = true
+        end
+    end
+    return pass, pdAlert
+end
+
 function cleanCarcass(ped)
 
-    RequestAnimDict("anim@gangops@facility@servers@bodysearch@")
-    RequestAnimDict("amb@medic@standing@kneel@base")
 
 	TaskPlayAnim(PlayerPedId(), "anim@gangops@facility@servers@bodysearch@", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
 	TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)

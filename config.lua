@@ -4,6 +4,9 @@ SellerLocation = {
     z = 33.64,
     rotation = 160.71
 }
+TimeToBait = 300000 --MS Time between allowed baiting
+HuntingArea = vector3(-1168.54,3835.29,485.14)
+HuntingRadius = 1000.0
 -- Items that can be dropped, as well as items the seller will buy
 ItemList = {
     [0] = {
