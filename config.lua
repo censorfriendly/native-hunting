@@ -7,39 +7,49 @@ SellerLocation = {
 TimeToBait = 300000 --MS Time between allowed baiting
 HuntingArea = vector3(-1168.54,3835.29,485.14)
 HuntingRadius = 1000.0
+HuntingWeaponHash = 100416529
+BaitHash = -1663028984
 -- Items that can be dropped, as well as items the seller will buy
 ItemList = {
     [0] = {
         ["name"] = "Animal Skin",
-        ["price"] = 60,
+        ["price"] = 50,
+        ["weight"] = 5
     },
     [0] = {
         ["name"] = "Raw Meat",
-        ["price"] = 60,
+        ["price"] = 50,
+        ["weight"] = 3
     },
     [0] = {
         ["name"] = "Dog Skin",
-        ["price"] = 60,
+        ["price"] = 50,
+        ["weight"] = 5
     },
     [0] = {
         ["name"] = "Rabbit Meat",
-        ["price"] = 60,
+        ["price"] = 50,
+        ["weight"] = 2
     },
     [0] = {
         ["name"] = "Rabbit Foot",
-        ["price"] = 60,
+        ["price"] = 50,
+        ["weight"] = 2
     },
     [0] = {
         ["name"] = "Hawk Foot",
-        ["price"] = 60,
+        ["price"] = 50,
+        ["weight"] = 1
     },
     [0] = {
         ["name"] = "Animal Skin",
-        ["price"] = 60,
+        ["price"] = 50,
+        ["weight"] = 5
     },
     [0] = {
-        ["name"] = "Beefn",
-        ["price"] = 60
+        ["name"] = "Beef",
+        ["price"] = 50,
+        ["weight"] = 3
     }
 }
 SellerHash = -1988720319

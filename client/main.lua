@@ -1,8 +1,9 @@
-rarity = nil
-local animal = nil
+local rarity = nil
+LAnimals = {}
 local reward = nil
 local timeout = TimeToBait
 local huntingBlip = {}
+lastSession = nil
 
 RegisterCommand("bait",function(source,args)
 
@@ -12,18 +13,26 @@ RegisterCommand("bait",function(source,args)
     local position = GetEntityCoords(player)
 
     local pass, alert =  checkHuntingArea(position)
+    loadAnims()
 
-    if pass then 
+
+    if pass and ( lastSession == nil or  lastSession + timeout < GetGameTimer()) then 
         -- we can hunt
+        lastSession = GetGameTimer()
         if alert then 
             -- position variable for location of call
             -- ADD PD ALERT FUNCTION HERE SNAILY/FRAMEWORK CALL
             print("ALERT PD ")
         end
-        animal, reward = generateHunt(position)
-        
-        RequestAnimDict("anim@gangops@facility@servers@bodysearch@")
-        RequestAnimDict("amb@medic@standing@kneel@base")
+        TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
+        local ainstance = generateHunt(position)
+        table.insert(LAnimals,ainstance)
+        Wait(5000)
+        StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
+        StopAnimPlayback(PlayerPedId(), 0, 0)
+        ClearPedTasksImmediately(PlayerPedId())
+    else
+        print("theres not animals in the area, you need to wait a bit")
     end
 end)
 
@@ -31,20 +40,29 @@ RegisterCommand("knife", function(source, args)
 
     local player = GetPlayerPed(-1)
     local position = GetEntityCoords(player)
-    peds = GetGamePool("CPed")
     local closestPed = nil
-    for k,ped in pairs(peds) do
+    for ped in EnumeratePeds() do
         local distanceCheck = GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), GetEntityCoords(ped), true)
         if distanceCheck <= 1.5 and ped ~= GetPlayerPed(-1) and not IsPedAPlayer(ped)  then
             closestPed = ped
             break
         end
     end
-    -- if closestPed == animal then 
-        cleanCarcass(closestPed)
-    -- else
+    local skinAnimal = nil;
+    for k, v in pairs(LAnimals) do
+        if closestPed == v.ped then 
+            skinAnimal = v
+        end
+    end
+    if skinAnimal ~= nil then 
+        cleanCarcass(skinAnimal)
+        LAnimals = checkCarcassEvent(LAnimals)
+    else
         -- @SNAILY Send message that this isnt the animal you were hunting
-    -- end
+        print("this is not the animal you were hunting")
+        print(dump(LAnimals))
+        print(dump(closestPed))
+    end
 end)
 
 
@@ -67,5 +85,8 @@ Citizen.CreateThread(function()
         SetBlipAlpha(huntingBlip.radius, 25)
         local coords = vector3(0.0, 0.0, 0.0)
     --   end
+end)
 
+AddEventHandler('onPlayerWasted', function(deathCoords)
+    LAnimals = removePeds(LAnimals)
 end)

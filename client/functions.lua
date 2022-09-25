@@ -13,21 +13,20 @@ end
 
 function createNPC(hash,location,rotation,aggressive)
     local modelHash = hash
-    local waittime = math.random(2,12) * 10000
     RequestModel(modelHash)
     local spawned = false
     while not HasModelLoaded(modelHash) do
         Wait(1)
     end
-    -- Wait(waittime)
+
     local spawnCoords = GetSpawnCoords(location)
 
-    local created_ped = CreatePed(1, modelHash , spawnCoords, rotation, true,true)
+    local created_ped = CreatePed(1, modelHash , spawnCoords, rotation, true,false)
 
     if aggressive then 
         TaskCombatPed(created_ped,GetPlayerPed(-1),0,16)
     else
-        TaskWanderInArea(created_ped, location,20,12,8.4)
+        TaskWanderInArea(created_ped, location,20.0,6,10.0)
     end
 
     return created_ped
@@ -38,16 +37,23 @@ function generateHunt(location)
     local pedList = nil
     local hash = nil
     local aggressive = false
+    local rarity = 1
+    local animal = nil
+    local hash = nil
+    RequestModel(BaitHash)
+    local spawned = false
+    while not HasModelLoaded(BaitHash) do
+        Wait(1)
+    end
 
     if odds < 75 then
         pedList = spawnablePeds["common"]
-        rarity = 1
     elseif odds < 90 then
         pedList = spawnablePeds["uncommon"]
         rarity = 2
     elseif odds < 97 then
         pedList = spawnablePeds["rare"]
-        rarity = 4
+        rarity = 3
     else 
         pedList = spawnablePeds["epic"]
         rarity = 4
@@ -67,7 +73,9 @@ function generateHunt(location)
         end
         getN = getN + 1
     end
-    return createNPC(hash,location, 0,aggressive), animal
+    local bait = CreateObject(BaitHash,location.x, location.y, location.z -1,true,false,false)
+    TriggerEvent("hunting:spawnAnimal",hash,location,aggressive)
+    return {['ped'] = nil,['reward'] = animal, ['rarity'] = rarity, ['bait'] = bait}
 end
 
 function checkHuntingArea(position)
@@ -83,9 +91,7 @@ function checkHuntingArea(position)
     return pass, pdAlert
 end
 
-function cleanCarcass(ped)
-
-
+function cleanCarcass(animalInstance)
 	TaskPlayAnim(PlayerPedId(), "anim@gangops@facility@servers@bodysearch@", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
 	TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
     Wait(5000)
@@ -95,13 +101,85 @@ function cleanCarcass(ped)
 	StopAnimPlayback(PlayerPedId(), 0, 0)
 	ClearPedTasksImmediately(PlayerPedId())
     -- Send rewards, add pelts to inventory
-    sendRewards()
-     -- DeletePed(ped)
+    sendRewards(animalInstance)
+    DeletePed(animalInstance.ped)
 end
 
-function sendRewards()
-    print(rarity)
-    print(reward)
+function checkCarcassEvent(animalTable)
+    print("In CHeck carcass Event")
+    length = 0
+    for _ in pairs(animalTable) do length = length + 10 end
+    if length > 49 then 
+        local odds = math.random(1,100)
+        if odds < length then
+            animalTable = triggerAggressiveSpawn(animalTable)
+        end
+    end
+    return animalTable
+end
+
+function triggerAggressiveSpawn(animalTable)
+    print("OH NO YOU ARE SO DEAD")
+    local pedList = spawnablePeds.common.aggressive
+    local hash = nil
+    local key = math.random(1, GetTableLng(pedList))
+    local getN = 1
+    local player = GetPlayerPed(-1)
+    local position = GetEntityCoords(player)
+    local animal = nil
+    animalTable = removePeds(animalTable)
+    for hashkey in pairs(pedList) do 
+        if(getN == key) then
+            animal = pedList[hashkey]
+            hash = hashkey
+        end
+        getN = getN + 1
+    end
+    local count = 0
+    repeat
+        count = count + 1
+        local anim = createNPC(hash,position, 0,true), animal, 1;
+        table.insert(animalTable,anim)
+    until count == 3
+    return animalTable
+end 
+
+function sendRewards(animalInstance)
+
+    print("Send Rewards Function")
+    local modifier = animalInstance.rarity
+    if GetPedCauseOfDeath(animalInstance.ped) ~= HuntingWeaponHash then 
+        modifier = math.floor(modifier * .5)
+    end
+
+    if modifier > 0 then 
+        animalInstance.multiplier = modifier
+        print(dump(animalInstance.reward))
+        print(dump(animalInstance.multiplier))
+        -- reward.items add each in table, quantity is reward.multiplier
+    else
+        -- Send message to player
+        print("Carcass was too badly damaged for usable material")
+    end
+end
+
+function removePeds(animalTable)
+    for k, v in pairs(animalTable) do
+        DeletePed(v.ped)
+    end
+    for i = #animalTable, 1, -1 do
+       table.remove(animalTable)
+    end
+    return animalTable
+end
+
+function loadAnims()
+
+    RequestAnimDict("anim@gangops@facility@servers@bodysearch@")
+    RequestAnimDict("amb@medic@standing@kneel@base")
+    while not HasAnimDictLoaded("amb@medic@standing@kneel@base") do
+        Wait(0)
+    end
 end
 
 
@@ -111,6 +189,16 @@ local radius = 50.0
 
 local x = coords.x + math.random(-radius, radius)
 local y = coords.y + math.random(-radius, radius)
+
+
+local distanceCheck = GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), x, y, coords.z, true)
+while distanceCheck < 15 do
+    x = coords.x + math.random(-radius, radius)
+    y = coords.y + math.random(-radius, radius)
+    distanceCheck = GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), x, y, coords.z, true)
+end
+local distanceCheck = GetDistanceBetweenCoords(GetEntityCoords(PlayerPedId()), x, y, coords.z, true)
+
 
 local spawnOnPavement = false -- Change this if you want to spawn the ped on the nearest pavement
 
@@ -156,3 +244,73 @@ function dump(o)
        return tostring(o)
     end
  end
+ --[[The MIT License (MIT)
+Copyright (c) 2017 IllidanS4
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+]]
+
+local entityEnumerator = {
+    __gc = function(enum)
+      if enum.destructor and enum.handle then
+        enum.destructor(enum.handle)
+      end
+      enum.destructor = nil
+      enum.handle = nil
+    end
+  }
+  
+  local function EnumerateEntities(initFunc, moveFunc, disposeFunc)
+    return coroutine.wrap(function()
+      local iter, id = initFunc()
+      if not id or id == 0 then
+        disposeFunc(iter)
+        return
+      end
+      
+      local enum = {handle = iter, destructor = disposeFunc}
+      setmetatable(enum, entityEnumerator)
+      
+      local next = true
+      repeat
+        coroutine.yield(id)
+        next, id = moveFunc(iter)
+      until not next
+      
+      enum.destructor, enum.handle = nil, nil
+      disposeFunc(iter)
+    end)
+  end
+  
+  function EnumerateObjects()
+    return EnumerateEntities(FindFirstObject, FindNextObject, EndFindObject)
+  end
+  
+  function EnumeratePeds()
+    return EnumerateEntities(FindFirstPed, FindNextPed, EndFindPed)
+  end
+  
+  function EnumerateVehicles()
+    return EnumerateEntities(FindFirstVehicle, FindNextVehicle, EndFindVehicle)
+  end
+  
+  function EnumeratePickups()
+    return EnumerateEntities(FindFirstPickup, FindNextPickup, EndFindPickup)
+  end
+  
