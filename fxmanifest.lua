@@ -8,6 +8,7 @@ client_scripts {
 	'config.lua',
 	'client/functions.lua',
 	'client/events.lua',
+	'client/frameworkEvents.lua',
 	'client/main.lua'
 }
 

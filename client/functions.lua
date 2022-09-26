@@ -4,10 +4,11 @@ function createSellNPC()
         Wait(10)
     end
     
-    local created_ped = CreatePed(1, SellerHash , vector3(SellerLocation.x,SellerLocation.y,SellerLocation.z -1), SellerLocation.rotation, true)
+    local created_ped = CreatePed(1, SellerHash , vector3(SellerLocation.x,SellerLocation.y,SellerLocation.z -1), SellerLocation.rotation, false)
     FreezeEntityPosition(created_ped, true)
     SetEntityInvincible(created_ped, true)
     SetBlockingOfNonTemporaryEvents(created_ped, true)
+
     return created_ped
 end
 
@@ -106,7 +107,6 @@ function cleanCarcass(animalInstance)
 end
 
 function checkCarcassEvent(animalTable)
-    print("In CHeck carcass Event")
     length = 0
     for _ in pairs(animalTable) do length = length + 10 end
     if length > 49 then 
@@ -138,15 +138,15 @@ function triggerAggressiveSpawn(animalTable)
     local count = 0
     repeat
         count = count + 1
-        local anim = createNPC(hash,position, 0,true), animal, 1;
-        table.insert(animalTable,anim)
+        local anim = createNPC(hash,position, 0,true);
+        local entry = {['ped'] = anim,['reward'] = animal, ['rarity'] = 1}
+        table.insert(animalTable,entry)
     until count == 3
     return animalTable
 end 
 
 function sendRewards(animalInstance)
 
-    print("Send Rewards Function")
     local modifier = animalInstance.rarity
     if GetPedCauseOfDeath(animalInstance.ped) ~= HuntingWeaponHash then 
         modifier = math.floor(modifier * .5)
@@ -154,12 +154,10 @@ function sendRewards(animalInstance)
 
     if modifier > 0 then 
         animalInstance.multiplier = modifier
-        print(dump(animalInstance.reward))
-        print(dump(animalInstance.multiplier))
-        -- reward.items add each in table, quantity is reward.multiplier
+        TriggerEvent("hunting:addToInventory",animalInstance.reward,animalInstance.multiplier)
     else
         -- Send message to player
-        print("Carcass was too badly damaged for usable material")
+        TriggerEvent("hunting:message","Carcass was too badly damaged for usable material")
     end
 end
 

@@ -11,18 +11,17 @@ RegisterCommand("bait",function(source,args)
     -- add requirement of having bait
     local player = GetPlayerPed(-1)
     local position = GetEntityCoords(player)
-
     local pass, alert =  checkHuntingArea(position)
-    loadAnims()
 
+    loadAnims()
 
     if pass and ( lastSession == nil or  lastSession + timeout < GetGameTimer()) then 
         -- we can hunt
         lastSession = GetGameTimer()
         if alert then 
             -- position variable for location of call
-            -- ADD PD ALERT FUNCTION HERE SNAILY/FRAMEWORK CALL
             print("ALERT PD ")
+            TriggerEvent("hunting:pdalert",true)
         end
         TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
         local ainstance = generateHunt(position)
@@ -32,7 +31,7 @@ RegisterCommand("bait",function(source,args)
         StopAnimPlayback(PlayerPedId(), 0, 0)
         ClearPedTasksImmediately(PlayerPedId())
     else
-        print("theres not animals in the area, you need to wait a bit")
+        TriggerEvent("hunting:message","There are no animals in the area, you need to wait a bit")
     end
 end)
 
@@ -59,32 +58,38 @@ RegisterCommand("knife", function(source, args)
         LAnimals = checkCarcassEvent(LAnimals)
     else
         -- @SNAILY Send message that this isnt the animal you were hunting
-        print("this is not the animal you were hunting")
-        print(dump(LAnimals))
-        print(dump(closestPed))
+        TriggerEvent("hunting:message","This is not the animal you were hunting")
     end
 end)
 
 
 Citizen.CreateThread(function()
+    huntingBlip.icon = AddBlipForCoord(HuntingArea)
+    SetBlipAlpha(huntingBlip.icon, 128)
+    SetBlipSprite(huntingBlip.icon, 141)
+    SetBlipDisplay(huntingBlip.icon, 4)
+    SetBlipScale(huntingBlip.icon, 1.0)
+    SetBlipColour(huntingBlip.icon, 5)
+    SetBlipAsShortRange(huntingBlip.icon, true)
+    BeginTextCommandSetBlipName("STRING")
+    AddTextComponentString("Hunting")
+    EndTextCommandSetBlipName(huntingBlip.icon)
 
-    -- for _, info in pairs(blips) do
-        huntingBlip.icon = AddBlipForCoord(HuntingArea)
-        SetBlipAlpha(huntingBlip.icon, 128)
-        SetBlipSprite(huntingBlip.icon, 141)
-        SetBlipDisplay(huntingBlip.icon, 4)
-        SetBlipScale(huntingBlip.icon, 1.0)
-        SetBlipColour(huntingBlip.icon, 5)
-        SetBlipAsShortRange(huntingBlip.icon, true)
-        BeginTextCommandSetBlipName("STRING")
-        AddTextComponentString("Hunting")
-        EndTextCommandSetBlipName(huntingBlip.icon)
+    huntingBlip.radius = AddBlipForRadius(HuntingArea,HuntingRadius)
+    SetBlipColour(huntingBlip.radius, 6)
+    SetBlipAlpha(huntingBlip.radius, 25)
+end)
 
-        huntingBlip.radius = AddBlipForRadius(HuntingArea,HuntingRadius)
-        SetBlipColour(huntingBlip.radius, 6)
-        SetBlipAlpha(huntingBlip.radius, 25)
-        local coords = vector3(0.0, 0.0, 0.0)
-    --   end
+Citizen.CreateThread(function()
+    while true do
+		Citizen.Wait(100)
+        local ped = GetPlayerPed(-1)
+		if GetDistanceBetweenCoords(SellerLocation.x, SellerLocation.y, SellerLocation.z, GetEntityCoords(ped)) < 3.0 then
+            if IsControlPressed(0,46) then 
+                TriggerEvent("hunting:sell")
+            end
+		end
+    end
 end)
 
 AddEventHandler('onPlayerWasted', function(deathCoords)
