@@ -5,6 +5,7 @@ local timeout = TimeToBait
 local huntingBlip = {}
 lastSession = nil
 
+-- Will be replaced and command will be a item used in inventory
 RegisterCommand("bait",function(source,args)
 
     -- add bait animation
@@ -21,7 +22,7 @@ RegisterCommand("bait",function(source,args)
         if alert then 
             -- position variable for location of call
             print("ALERT PD ")
-            TriggerEvent("hunting:pdalert",true)
+            TriggerEvent("hunting:pdalert",position)
         end
         TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
         local ainstance = generateHunt(position)
@@ -30,11 +31,13 @@ RegisterCommand("bait",function(source,args)
         StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
         StopAnimPlayback(PlayerPedId(), 0, 0)
         ClearPedTasksImmediately(PlayerPedId())
+        TriggerEvent("hunting:removeBait")
     else
         TriggerEvent("hunting:message","There are no animals in the area, you need to wait a bit")
     end
 end)
 
+-- Will be replaced and command will be a item used in inventory
 RegisterCommand("knife", function(source, args)
 
     local player = GetPlayerPed(-1)
