@@ -30,7 +30,6 @@ RegisterNetEvent('QBCore:Server:UpdateObject', function()
 end)
 
 RegisterNetEvent('onResourceStart', function()
-    print("server resource start")
     QBCore.Functions.AddItems({
         -- Hunting Items
         ['bait']					 = {['name'] = 'bait', 				    ['label'] = 'Bait', 				['weight'] = 500, 		['type'] = 'item', 		['image'] = 'printerdocument.png', 		['unique'] = false, 		['useable'] = true, 	['shouldClose'] = true,	   ['combinable'] = nil,   ['description'] = 'A smelly bait to attract animals'},
@@ -49,20 +48,15 @@ RegisterNetEvent('onResourceStart', function()
 end)
 
 RegisterNetEvent('hunting:server:sellItems', function(itemName, itemLabel, itemAmount, itemPrice)
-    print("we are hitting this")
-    print(itemName)
-    print(itemLabel)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local totalPrice = (tonumber(itemAmount) * itemPrice)
-    print(totalPrice)
     if Player.Functions.RemoveItem(itemName, tonumber(itemAmount)) then
 
         Player.Functions.AddMoney('cash', totalPrice)
-        TriggerClientEvent('QBCore:Notify', src, Lang:t('success.sold', { value = tonumber(itemAmount), value2 = itemLabel, value3 = totalPrice }),'success')
-        TriggerClientEvent('inventory:client:ItemBox', src, itemLabel, 'remove')
+        TriggerClientEvent('QBCore:Notify', src, "Items Sold " .. tonumber(itemAmount) .." ".. itemLabel .. " " .. totalPrice,'success')
     else
-        TriggerClientEvent('QBCore:Notify', src, Lang:t('error.no_items'), 'error')
+        TriggerClientEvent('QBCore:Notify', src, "No items were sold", 'error')
     end
     TriggerClientEvent('hunting:client:openMenu', src)
 end)

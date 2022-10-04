@@ -1,10 +1,10 @@
 function createSellNPC()
-    RequestModel(SellerHash)
-    while not HasModelLoaded(SellerHash) do
+    RequestModel(Config.SellerHash)
+    while not HasModelLoaded(Config.SellerHash) do
         Wait(10)
     end
     
-    local created_ped = CreatePed(1, SellerHash , vector3(SellerLocation.x,SellerLocation.y,SellerLocation.z -1), SellerLocation.rotation, false)
+    local created_ped = CreatePed(1, Config.SellerHash , vector3(Config.SellerLocation.x,Config.SellerLocation.y,Config.SellerLocation.z -1), Config.SellerLocation.rotation, false)
     FreezeEntityPosition(created_ped, true)
     SetEntityInvincible(created_ped, true)
     SetBlockingOfNonTemporaryEvents(created_ped, true)
@@ -41,22 +41,22 @@ function generateHunt(location)
     local rarity = 1
     local animal = nil
     local hash = nil
-    RequestModel(BaitHash)
+    RequestModel(Config.BaitHash)
     local spawned = false
-    while not HasModelLoaded(BaitHash) do
+    while not HasModelLoaded(Config.BaitHash) do
         Wait(1)
     end
 
     if odds < 75 then
-        pedList = spawnablePeds["common"]
+        pedList = Config.spawnablePeds["common"]
     elseif odds < 90 then
-        pedList = spawnablePeds["uncommon"]
+        pedList = Config.spawnablePeds["uncommon"]
         rarity = 2
     elseif odds < 97 then
-        pedList = spawnablePeds["rare"]
+        pedList = Config.spawnablePeds["rare"]
         rarity = 2
     else 
-        pedList = spawnablePeds["epic"]
+        pedList = Config.spawnablePeds["epic"]
         rarity = 2
     end
     if (odds % 10 == 0) then
@@ -74,13 +74,13 @@ function generateHunt(location)
         end
         getN = getN + 1
     end
-    local bait = CreateObject(BaitHash,location.x, location.y, location.z -1,true,false,false)
+    local bait = CreateObject(Config.BaitHash,location.x, location.y, location.z -1,true,false,false)
     TriggerEvent("hunting:spawnAnimal",hash,location,aggressive)
     return {['ped'] = nil,['reward'] = animal, ['rarity'] = rarity, ['bait'] = bait}
 end
 
 function checkHuntingArea(position)
-    local distanceCheck = GetDistanceBetweenCoords(position, HuntingArea, true)
+    local distanceCheck = GetDistanceBetweenCoords(position, Config.HuntingArea, true)
     local pass = false
     local pdAlert = false
     if position.y > 1400 then
@@ -132,7 +132,7 @@ function checkCarcassEvent(animalTable)
 end
 
 function triggerAggressiveSpawn(animalTable)
-    local pedList = spawnablePeds.common.aggressive
+    local pedList = Config.spawnablePeds.common.aggressive
     local hash = nil
     local key = math.random(1, GetTableLng(pedList))
     local getN = 1
@@ -161,7 +161,7 @@ function sendRewards(animalInstance)
 
     local modifier = animalInstance.rarity
     print(GetPedCauseOfDeath(animalInstance.ped))
-    if GetPedCauseOfDeath(animalInstance.ped) ~= HuntingWeaponHash then 
+    if GetPedCauseOfDeath(animalInstance.ped) ~= Config.HuntingWeaponHash then 
         modifier = math.floor(modifier * .5)
     end
 

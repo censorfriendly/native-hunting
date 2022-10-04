@@ -9,14 +9,9 @@ client_scripts {
 	'client/functions.lua',
 	'client/events.lua',
 	'client/frameworkEvents.lua',
-	'client/main.lua'
+	'client/main.lua',
+	'HuntingRifle/cl_weaponNames.lua'
 }
-
-files {
-    'html/**/*'
-}
-
-ui_page 'html/dist/index.html'
 
 server_scripts {
 	'config.lua',
@@ -24,3 +19,20 @@ server_scripts {
 	'server/events.lua',
 	'server/main.lua'
 }
+
+files {
+	'HuntingRifle/meta/weaponcomponents.meta',
+	'HuntingRifle/meta/weaponarchetypes.meta',
+	'HuntingRifle/meta/weaponanimations.meta',
+	'HuntingRifle/meta/pedpersonality.meta',
+	'HuntingRifle/meta/weapons.meta',
+}
+
+data_file 'WEAPONCOMPONENTSINFO_FILE' '**/weaponcomponents.meta'
+data_file 'WEAPON_METADATA_FILE' '**/weaponarchetypes.meta'
+data_file 'WEAPON_ANIMATIONS_FILE' '**/weaponanimations.meta'
+data_file 'PED_PERSONALITY_FILE' '**/pedpersonality.meta'
+data_file 'WEAPONINFO_FILE' '**/weapons.meta'
+
+
+client_script 

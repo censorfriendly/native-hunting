@@ -1,9 +1,8 @@
 local rarity = nil
 LAnimals = {}
 local reward = nil
-local timeout = TimeToBait
 local huntingBlip = {}
-lastSession = nil
+local lastSession = nil
 QBCore = exports['qb-core']:GetCoreObject()
 
 -- Will be replaced and command will be a item used in inventory
@@ -16,13 +15,13 @@ RegisterNetEvent('native-hunting:client:bait', function()
     local position = GetEntityCoords(player)
     local pass, alert =  checkHuntingArea(position)
 
-    if pass and ( lastSession == nil or  lastSession + timeout < GetGameTimer()) then 
+    if pass and ( lastSession == nil or  lastSession + Config.TimeToBait < GetGameTimer()) then 
         -- we can hunt
         TriggerServerEvent("hunting:removeBait")
         lastSession = GetGameTimer()
         if alert then 
             -- position variable for location of call
-            TriggerEvent("hunting:pdalert",position)
+            TriggerEvent("hunting:pdalert", position)
         end
         TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
         local ainstance = generateHunt(position)
@@ -70,14 +69,13 @@ RegisterNetEvent("native-hunting:client:knife", function()
         cleanCarcass(skinAnimal)
         LAnimals = checkCarcassEvent(LAnimals)
     else
-        -- @SNAILY Send message that this isnt the animal you were hunting
         TriggerEvent("hunting:message","This is not the animal you were hunting",'error')
     end
 end)
 
 
 Citizen.CreateThread(function()
-    huntingBlip.icon = AddBlipForCoord(HuntingArea)
+    huntingBlip.icon = AddBlipForCoord(config.HuntingArea)
     SetBlipAlpha(huntingBlip.icon, 128)
     SetBlipSprite(huntingBlip.icon, 141)
     SetBlipDisplay(huntingBlip.icon, 4)
@@ -88,7 +86,7 @@ Citizen.CreateThread(function()
     AddTextComponentString("Hunting")
     EndTextCommandSetBlipName(huntingBlip.icon)
 
-    huntingBlip.radius = AddBlipForRadius(HuntingArea,HuntingRadius)
+    huntingBlip.radius = AddBlipForRadius(config.HuntingArea,config.HuntingRadius)
     SetBlipColour(huntingBlip.radius, 6)
     SetBlipAlpha(huntingBlip.radius, 25)
 end)
@@ -103,11 +101,11 @@ CreateThread(function()
         local sleep = 1000
         if LocalPlayer.state['isLoggedIn'] then
             local pos = GetEntityCoords(PlayerPedId())
-            local distance = #(pos - vector3(SellerLocation.x, SellerLocation.y, SellerLocation.z))
+            local distance = #(pos - vector3(Config.SellerLocation.x, Config.SellerLocation.y, Config.SellerLocation.z))
             if distance < 10 then
                 if distance < 1.5 then
                     sleep = 0
-                    DrawText3Ds(SellerLocation.x, SellerLocation.y, SellerLocation.z, 'Open Shop')
+                    DrawText3Ds(Config.SellerLocation.x, Config.SellerLocation.y, Config.SellerLocation.z, 'Open Shop')
                     if IsControlJustPressed(0, 38) then
                         TriggerEvent("hunting:client:openMenu")
                         sleep = 100

@@ -1,16 +1,18 @@
-SellerLocation = {
+Config = {}
+Config.SellerLocation = {
     x = -776.64,
     y = 5593.63,
     z = 33.64,
     rotation = 160.71
 }
-TimeToBait = 300000 --MS Time between allowed baiting
-HuntingArea = vector3(-1168.54,3835.29,485.14)
-HuntingRadius = 1000.0
-HuntingWeaponHash = -1625947810
-BaitHash = -1663028984
+Config.TimeToBait = 300000 --MS Time between allowed baiting
+Config.HuntingArea = vector3(-1168.54,3835.29,485.14)
+Config.HuntingRadius = 1000.0
+Config.HuntingWeaponHash = -1625947810
+Config.BaitHash = -1663028984
+Config.SellerHash = -1988720319
 -- Items that can be dropped, as well as items the seller will buy
-Shop = {
+Config.Shop = {
     ["label"] = "Hunting Lodge",
     ["items"] = {
         [1] = {
@@ -39,7 +41,7 @@ Shop = {
             }
         }
 }
-ItemList = {
+Config.ItemList = {
     [1] = {
         ["label"] ="Hide",
         ["name"] = "hide",
@@ -81,9 +83,8 @@ ItemList = {
         ["price"] = 50
     }
 }
-SellerHash = -1988720319
 
-spawnablePeds = {
+config.spawnablePeds = {
     ["common"] = {
         ["aggressive"] = {
             [307287994] = {

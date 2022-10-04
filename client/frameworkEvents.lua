@@ -102,7 +102,7 @@ RegisterNetEvent('hunting:client:openMenu', function()
             txt = "",
             params = {
                 event = 'hunting:client:openSellShop',
-                args = ItemList
+                args = Config.ItemList
                 
             }
         },{
@@ -117,5 +117,5 @@ RegisterNetEvent('hunting:client:openMenu', function()
 end)
 
 RegisterNetEvent('hunting:client:openBuyShop', function()
-    TriggerServerEvent("inventory:server:OpenInventory", "shop", "Itemshop_Hunting" , Shop)
+    TriggerServerEvent("inventory:server:OpenInventory", "shop", "Itemshop_Hunting" , Config.Shop)
 end)
