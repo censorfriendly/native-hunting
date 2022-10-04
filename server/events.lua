@@ -24,7 +24,6 @@ QBCore.Functions.CreateCallback('hunting:server:getInv', function(source, cb)
 end)
 
 RegisterNetEvent('QBCore:Server:UpdateObject', function()
-    print("qbcore update object")
 	if source ~= '' then return false end
 	QBCore = exports['qb-core']:GetCoreObject()
 end)

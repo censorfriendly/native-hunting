@@ -84,7 +84,7 @@ Config.ItemList = {
     }
 }
 
-config.spawnablePeds = {
+Config.spawnablePeds = {
     ["common"] = {
         ["aggressive"] = {
             [307287994] = {

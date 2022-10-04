@@ -2,6 +2,7 @@ local rarity = nil
 LAnimals = {}
 local reward = nil
 local huntingBlip = {}
+local huntingLodge = {}
 local lastSession = nil
 QBCore = exports['qb-core']:GetCoreObject()
 
@@ -75,7 +76,7 @@ end)
 
 
 Citizen.CreateThread(function()
-    huntingBlip.icon = AddBlipForCoord(config.HuntingArea)
+    huntingBlip.icon = AddBlipForCoord(Config.HuntingArea)
     SetBlipAlpha(huntingBlip.icon, 128)
     SetBlipSprite(huntingBlip.icon, 141)
     SetBlipDisplay(huntingBlip.icon, 4)
@@ -83,10 +84,21 @@ Citizen.CreateThread(function()
     SetBlipColour(huntingBlip.icon, 5)
     SetBlipAsShortRange(huntingBlip.icon, true)
     BeginTextCommandSetBlipName("STRING")
-    AddTextComponentString("Hunting")
+    AddTextComponentString("Hunting Zone")
     EndTextCommandSetBlipName(huntingBlip.icon)
 
-    huntingBlip.radius = AddBlipForRadius(config.HuntingArea,config.HuntingRadius)
+    huntingLodge.icon = AddBlipForCoord(vector3(Config.SellerLocation.x,Config.SellerLocation.y,Config.SellerLocation.z))
+    SetBlipAlpha(huntingLodge.icon, 256)
+    SetBlipSprite(huntingLodge.icon, 141)
+    SetBlipDisplay(huntingLodge.icon, 4)
+    SetBlipScale(huntingLodge.icon, 0.7fafafafafafff)
+    SetBlipColour(huntingLodge.icon, 5)
+    SetBlipAsShortRange(huntingLodge.icon, true)
+    BeginTextCommandSetBlipName("STRING")
+    AddTextComponentString("Hunting Lodge")
+    EndTextCommandSetBlipName(huntingLodge.icon)
+
+    huntingBlip.radius = AddBlipForRadius(Config.HuntingArea,Config.HuntingRadius)
     SetBlipColour(huntingBlip.radius, 6)
     SetBlipAlpha(huntingBlip.radius, 25)
 end)
