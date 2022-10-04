@@ -12,11 +12,9 @@ client_scripts {
 	'client/main.lua'
 }
 
--- files {
---     'html/dist/index.html',
---     'html/dist/css/app.css',
---     'html/dist/js/app.js'
--- }
+files {
+    'html/**/*'
+}
 
 ui_page 'html/dist/index.html'
 

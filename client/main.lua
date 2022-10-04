@@ -4,42 +4,52 @@ local reward = nil
 local timeout = TimeToBait
 local huntingBlip = {}
 lastSession = nil
+QBCore = exports['qb-core']:GetCoreObject()
 
 -- Will be replaced and command will be a item used in inventory
-RegisterCommand("bait",function(source,args)
 
-    -- add bait animation
+
+RegisterNetEvent('native-hunting:client:bait', function()
+   -- add bait animation
     -- add requirement of having bait
     local player = GetPlayerPed(-1)
     local position = GetEntityCoords(player)
     local pass, alert =  checkHuntingArea(position)
 
-    loadAnims()
-
     if pass and ( lastSession == nil or  lastSession + timeout < GetGameTimer()) then 
         -- we can hunt
+        TriggerServerEvent("hunting:removeBait")
         lastSession = GetGameTimer()
         if alert then 
             -- position variable for location of call
-            print("ALERT PD ")
             TriggerEvent("hunting:pdalert",position)
         end
         TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
         local ainstance = generateHunt(position)
         table.insert(LAnimals,ainstance)
-        Wait(5000)
-        StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
-        StopAnimPlayback(PlayerPedId(), 0, 0)
-        ClearPedTasksImmediately(PlayerPedId())
-        TriggerEvent("hunting:removeBait")
+        QBCore.Functions.Progressbar('baitbar', 'Placing bait', 5000, false, true, {
+            disableMovement = true,
+            disableCarMovement = true,
+            disableMouse = false,
+            disableCombat = true
+            }, {}, {}, {}, function()
+                -- This code runs if the progress bar completes successfully
+                StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
+                StopAnimPlayback(PlayerPedId(), 0, 0)
+                ClearPedTasksImmediately(PlayerPedId())
+            end, function()
+                -- This code runs if the progress bar gets cancelled
+                StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
+                StopAnimPlayback(PlayerPedId(), 0, 0)
+                ClearPedTasksImmediately(PlayerPedId())
+        end)
     else
-        TriggerEvent("hunting:message","There are no animals in the area, you need to wait a bit")
+        TriggerEvent("hunting:message","There are no animals in the area, you need to wait a bit",'error')
     end
+
 end)
 
--- Will be replaced and command will be a item used in inventory
-RegisterCommand("knife", function(source, args)
-
+RegisterNetEvent("native-hunting:client:knife", function()
     local player = GetPlayerPed(-1)
     local position = GetEntityCoords(player)
     local closestPed = nil
@@ -61,7 +71,7 @@ RegisterCommand("knife", function(source, args)
         LAnimals = checkCarcassEvent(LAnimals)
     else
         -- @SNAILY Send message that this isnt the animal you were hunting
-        TriggerEvent("hunting:message","This is not the animal you were hunting")
+        TriggerEvent("hunting:message","This is not the animal you were hunting",'error')
     end
 end)
 
@@ -83,18 +93,32 @@ Citizen.CreateThread(function()
     SetBlipAlpha(huntingBlip.radius, 25)
 end)
 
-Citizen.CreateThread(function()
+AddEventHandler('onPlayerWasted', function(deathCoords)
+    LAnimals = removePeds(LAnimals)
+end)
+
+
+CreateThread(function()
     while true do
-		Citizen.Wait(100)
-        local ped = GetPlayerPed(-1)
-		if GetDistanceBetweenCoords(SellerLocation.x, SellerLocation.y, SellerLocation.z, GetEntityCoords(ped)) < 3.0 then
-            if IsControlPressed(0,46) then 
-                TriggerEvent("hunting:sell")
+        local sleep = 1000
+        if LocalPlayer.state['isLoggedIn'] then
+            local pos = GetEntityCoords(PlayerPedId())
+            local distance = #(pos - vector3(SellerLocation.x, SellerLocation.y, SellerLocation.z))
+            if distance < 10 then
+                if distance < 1.5 then
+                    sleep = 0
+                    DrawText3Ds(SellerLocation.x, SellerLocation.y, SellerLocation.z, 'Open Shop')
+                    if IsControlJustPressed(0, 38) then
+                        TriggerEvent("hunting:client:openMenu")
+                        sleep = 100
+                    end
+                end
             end
-		end
+        end
+        Wait(sleep)
     end
 end)
 
-AddEventHandler('onPlayerWasted', function(deathCoords)
-    LAnimals = removePeds(LAnimals)
+RegisterNetEvent('QBCore:Client:UpdateObject', function()
+	QBCore = exports['qb-core']:GetCoreObject()
 end)

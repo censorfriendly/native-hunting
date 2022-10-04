@@ -7,6 +7,7 @@ AddEventHandler('playerSpawned', function(spawn)
     seller = createSellNPC()
 		firstspawn = 1
 	end
+    loadAnims()
 end)
 
 AddEventHandler('onClientResourceStart', function()

@@ -54,10 +54,10 @@ function generateHunt(location)
         rarity = 2
     elseif odds < 97 then
         pedList = spawnablePeds["rare"]
-        rarity = 3
+        rarity = 2
     else 
         pedList = spawnablePeds["epic"]
-        rarity = 4
+        rarity = 2
     end
     if (odds % 10 == 0) then
         pedList = pedList['aggressive']
@@ -93,17 +93,30 @@ function checkHuntingArea(position)
 end
 
 function cleanCarcass(animalInstance)
+    
 	TaskPlayAnim(PlayerPedId(), "anim@gangops@facility@servers@bodysearch@", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
 	TaskPlayAnim(PlayerPedId(), "amb@medic@standing@kneel@base", "base", 8.0, 0.0, -1, 0, 1.0, 0, 0, 0)
-    Wait(5000)
+    QBCore.Functions.Progressbar('baitbar', 'Placing bait', 5000, false, true, {
+        disableMovement = true,
+        disableCarMovement = true,
+        disableMouse = false,
+        disableCombat = true
+        }, {}, {}, {}, function()
+            StopAnimTask(PlayerPedId(), "anim@gangops@facility@servers@bodysearch@", "base")
+            StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
+            StopAnimPlayback(PlayerPedId(), 0, 0)
+            ClearPedTasksImmediately(PlayerPedId())
+            sendRewards(animalInstance)
+            DeletePed(animalInstance.ped)
+        end, function()
+            -- This code runs if the progress bar gets cancelled
+            StopAnimTask(PlayerPedId(), "anim@gangops@facility@servers@bodysearch@", "base")
+            StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
+            StopAnimPlayback(PlayerPedId(), 0, 0)
+            ClearPedTasksImmediately(PlayerPedId())
+    end)
 
-	StopAnimTask(PlayerPedId(), "anim@gangops@facility@servers@bodysearch@", "base")
-	StopAnimTask(PlayerPedId(), "amb@medic@standing@kneel@base", "base")
-	StopAnimPlayback(PlayerPedId(), 0, 0)
-	ClearPedTasksImmediately(PlayerPedId())
     -- Send rewards, add pelts to inventory
-    sendRewards(animalInstance)
-    DeletePed(animalInstance.ped)
 end
 
 function checkCarcassEvent(animalTable)
@@ -119,7 +132,6 @@ function checkCarcassEvent(animalTable)
 end
 
 function triggerAggressiveSpawn(animalTable)
-    print("OH NO YOU ARE SO DEAD")
     local pedList = spawnablePeds.common.aggressive
     local hash = nil
     local key = math.random(1, GetTableLng(pedList))
@@ -148,6 +160,7 @@ end
 function sendRewards(animalInstance)
 
     local modifier = animalInstance.rarity
+    print(GetPedCauseOfDeath(animalInstance.ped))
     if GetPedCauseOfDeath(animalInstance.ped) ~= HuntingWeaponHash then 
         modifier = math.floor(modifier * .5)
     end
@@ -157,7 +170,7 @@ function sendRewards(animalInstance)
         TriggerEvent("hunting:addToInventory",animalInstance.reward,animalInstance.multiplier)
     else
         -- Send message to player
-        TriggerEvent("hunting:message","Carcass was too badly damaged for usable material")
+        TriggerEvent("hunting:message","Carcass was too badly damaged for usable material",'error')
     end
 end
 
@@ -312,3 +325,22 @@ local entityEnumerator = {
     return EnumerateEntities(FindFirstPickup, FindNextPickup, EndFindPickup)
   end
   
+---Draws 3d text in the world on the given position
+--- @param x number The x coord of the text to draw
+--- @param y number The y coord of the text to draw
+--- @param z number The z coord of the text to draw
+--- @param text string The text to display
+function DrawText3Ds(x, y, z, text)
+    SetTextScale(0.35, 0.35)
+    SetTextFont(4)
+    SetTextProportional(1)
+    SetTextColour(255, 255, 255, 215)
+    SetTextEntry("STRING")
+    SetTextCentre(true)
+    AddTextComponentString(text)
+    SetDrawOrigin(x,y,z, 0)
+    DrawText(0.0, 0.0)
+    local factor = string.len(text) / 370
+    DrawRect(0.0, 0.0125, 0.017 + factor, 0.03, 0, 0, 0, 75)
+    ClearDrawOrigin()
+end
