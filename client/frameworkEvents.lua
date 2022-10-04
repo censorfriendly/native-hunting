@@ -34,7 +34,7 @@ RegisterNetEvent('hunting:client:openSellShop', function(data)
                         header = data[i].label,
                         txt = 'Sell item $'.. data[i].price,
                         params = {
-                            event = 'hunting:client:pawnitems',
+                            event = 'hunting:client:sellItems',
                             args = {
                                 label = data[i].label,
                                 price = data[i].price,
@@ -56,6 +56,32 @@ RegisterNetEvent('hunting:client:openSellShop', function(data)
     end)
 end)
 
+
+RegisterNetEvent('hunting:client:sellItems', function(item)
+    local sellingItem = exports['qb-input']:ShowInput({
+        header = "Sell Amount",
+        submitText = "sell",
+        inputs = {
+            {
+                type = 'number',
+                isRequired = false,
+                name = 'amount',
+                text = "Max" .. item.amount
+            }
+        }
+    })
+    if sellingItem then
+        if not sellingItem.amount then
+            return
+        end
+
+        if tonumber(sellingItem.amount) > 0 then
+            TriggerServerEvent('hunting:server:sellItems', item.name, item.label, sellingItem.amount, item.price)
+        else
+            QBCore.Functions.Notify("Error Selling", 'error')
+        end
+    end
+end)
 
 RegisterNetEvent('hunting:client:openMenu', function()
     local pawnShop = {

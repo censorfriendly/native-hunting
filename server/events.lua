@@ -47,3 +47,22 @@ RegisterNetEvent('onResourceStart', function()
         ['hunting_knife'] 			 = {['name'] = 'hunting_knife', 	 	  	['label'] = 'Hunting Knife', 			['weight'] = 1000, 		['type'] = 'item', 	['image'] = 'weapon_knife.png', 	 ['unique'] = true, 	['useable'] = true, 	['description'] = 'A short hunting knife'},
     })
 end)
+
+RegisterNetEvent('hunting:server:sellItems', function(itemName, itemLabel, itemAmount, itemPrice)
+    print("we are hitting this")
+    print(itemName)
+    print(itemLabel)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    local totalPrice = (tonumber(itemAmount) * itemPrice)
+    print(totalPrice)
+    if Player.Functions.RemoveItem(itemName, tonumber(itemAmount)) then
+
+        Player.Functions.AddMoney('cash', totalPrice)
+        TriggerClientEvent('QBCore:Notify', src, Lang:t('success.sold', { value = tonumber(itemAmount), value2 = itemLabel, value3 = totalPrice }),'success')
+        TriggerClientEvent('inventory:client:ItemBox', src, itemLabel, 'remove')
+    else
+        TriggerClientEvent('QBCore:Notify', src, Lang:t('error.no_items'), 'error')
+    end
+    TriggerClientEvent('hunting:client:openMenu', src)
+end)
